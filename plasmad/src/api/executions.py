@@ -15,8 +15,10 @@ api = Namespace('execution', description='routes for execution management')
 execution_pass = api.model('ExecutionPass',{
     'workflow-id': fields.String(required=True, description='Execution passes'),
     'execution-id': fields.String(required=True, description='Execution passes'),
-    'state': fields.String(required=True,description='State of execution'),
-    'time-taken': fields.String(required=True,description='Time taken by execution pass'),
+    'status': fields.String(required=True, description='State of execution'),
+    'started-at': fields.String(required=True, description='Execution start timestamp'),
+    'finished-at': fields.String(required=True, description='Execution end timestamp'
+    'time-taken': fields.String(required=True, description='Time taken by execution pass'),
     #'progress': fields.Wildcard(required=True,secription='Progress of exeuction pass')
 })
 
@@ -61,7 +63,7 @@ class Execution(Resource):
         db = get_plasma_db()
         execution_collection = db.get_collection('executions')
         updated_resource = execution_collection.find_one_and_update(
-            {"execution-id": executioen_id},
+            {"execution-id": execution_id},
             {"$set": dict(args)}
         )
         if updated_resource:
@@ -99,4 +101,5 @@ class ExecutionLogs(Resource):
         else:
             response = generate_response(404)
         return response
+
 
