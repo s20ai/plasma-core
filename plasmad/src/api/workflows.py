@@ -9,6 +9,8 @@ from xxhash import xxh64_hexdigest
 from src.utils.api_utils import *
 from src.utils.decorators import *
 from src.api.executions import execution_pass
+from src.wxe.execution_engine import run_workflow, stop_workflow
+from time import time
 
 api = Namespace('workflow', description='routes for workflow management')
 
@@ -19,7 +21,7 @@ workflow = api.model('Workflow', {
     'workflow-name': fields.String(required=True, description='Workflow name'),
     'status': fields.Integer(required=True, description='Workflow status'),
     'schedule': fields.Integer(required=True, description='Workflow schedule'),
-    'execution': fields.Nested(execution_pass,required=True,description='Execution Detail')
+    'execution-id': fields.String(required=True,description='Execution id')
 })
 
 
@@ -106,29 +108,34 @@ class WorkflowStart(Resource):
     @api.doc('Execute a workflow')
     def post(self, workflow_id):
         db = get_plasma_db()
+        execution_pass = {}
+        execution_pass['workflow-id'] = workflow_id
+        execution_pass['status'] = 'Queued'
+        execution_pass['started-at'] = time()
+        execution_pass['finished-at' = None
+        execution_pass['execution-id'] = xxh64_hexdigest(workflow_id+str(time()))
+        execution_collection = db.get_collection('executions')
         workflow_collection = db.get_collection('workflows')
-        result = workflow_collection.find_one({'workflow-id': workflow_id})
-        if result:
-            response_data = marshal(result, workflow)
-            response = generate_response(200, response_data)
-        else:
-            response = generate_response(404)
+        workflow_collection.find_one_and_update(
+                {'workflow-id': workflow_id},
+                {'$set':{'status':'executing','execution':execution_pass['execution-id']}})
+        execution_collection.insert(execution)
+        run_workflow(execution_pass)
+        response = generate_response(200)
         return response
-    ### create new execution_pass
 
 
 @api.route('/<workflow_id>/stop')
 @api.param('workflow_id','Workflow ID')
 class WorkflowStop(Resource):
     @api.doc('Stop a workflow')
-    def post(self, workflow_id):
         db = get_plasma_db()
         workflow_collection = db.get_collection('workflows')
-        result = workflow_collection.find_one({'workflow-id': workflow_id})
-        if result:
-            response_data = marshal(result, workflow)
-            response = generate_response(200, response_data)
-        else:
-            response = generate_response(404)
+        workflow = workflow_collection.find_one_and_update(
+                {'workflow-id': workflow_id},
+                {'$set':{'status':'stopped'}})
+        workflow = workflow_collection.find({'workflow-id': workflow_id})
+        execution_id = workflow['execution-id']
+        stop_workflow(execution_pass)
+        response = generate_response(200)
         return response
-    ## stop_execution_pass
