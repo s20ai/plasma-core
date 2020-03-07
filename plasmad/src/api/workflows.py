@@ -112,7 +112,7 @@ class WorkflowStart(Resource):
         execution_pass['workflow-id'] = workflow_id
         execution_pass['status'] = 'Queued'
         execution_pass['started-at'] = time()
-        execution_pass['finished-at' = None
+        execution_pass['finished-at'] = None
         execution_pass['execution-id'] = xxh64_hexdigest(workflow_id+str(time()))
         execution_collection = db.get_collection('executions')
         workflow_collection = db.get_collection('workflows')
@@ -129,6 +129,7 @@ class WorkflowStart(Resource):
 @api.param('workflow_id','Workflow ID')
 class WorkflowStop(Resource):
     @api.doc('Stop a workflow')
+    def post(self, workflow_id):
         db = get_plasma_db()
         workflow_collection = db.get_collection('workflows')
         workflow = workflow_collection.find_one_and_update(

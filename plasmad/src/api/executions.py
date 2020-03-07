@@ -17,7 +17,7 @@ execution_pass = api.model('ExecutionPass',{
     'execution-id': fields.String(required=True, description='Execution passes'),
     'status': fields.String(required=True, description='State of execution'),
     'started-at': fields.String(required=True, description='Execution start timestamp'),
-    'finished-at': fields.String(required=True, description='Execution end timestamp'
+    'finished-at': fields.String(required=True, description='Execution end timestamp'),
     'time-taken': fields.String(required=True, description='Time taken by execution pass'),
     #'progress': fields.Wildcard(required=True,secription='Progress of exeuction pass')
 })
