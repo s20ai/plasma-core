@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from src.api.rest_api import initialize_api
+from src.utils.db_utils import mongo_ping, redis_ping
 from logging.handlers import RotatingFileHandler
 from config import *
 import logging, sys
@@ -14,23 +15,23 @@ date_format = '%m/%d/%Y %I:%M:%S %p'
 logging.basicConfig(handlers=handlers, level=logging.DEBUG, format=format_string, datefmt=date_format)
 
 
-def redis_ping():
-    return True
-
-
-def mongo_ping():
-    return True
-
 
 def pre_init_check():
-    if (redis_ping() and mongo_ping()):
-        return True
+    status = {True:'connected',False:'failed to connect'}
+    mongo_connected = mongo_ping(MONGODB_CONNECTION_URI)
+    redis_connected = redis_ping(REDIS_HOST,REDIS_PORT)
+    print('> Mongo status : '+status[mongo_connected])
+    print('> Redis status : '+status[redis_connected])
+    if mongo_connected & redis_connected:
+        print('> Initializing Plasma Daemon')
+        output = True
     else:
-        return False
+        output = False
+    return output
 
 
 if __name__ == '__main__':
     if pre_init_check():
         initialize_api(REST_API_HOST, REST_API_PORT)
     else:
-        print('Failed to start plasma-core')
+        print('> Failed to start plasma-core')
