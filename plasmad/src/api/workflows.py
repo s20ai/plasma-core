@@ -21,6 +21,7 @@ workflow = api.model('Workflow', {
     'workflow-id': fields.String(required=True, description='Workflow id'),
     'workflow-name': fields.String(required=True, description='Workflow name'),
     'status': fields.String(required=True, description='Workflow status'),
+    'environment': fields.String(required=True, description='Workflow execution Environment'),
     'schedule': fields.Integer(required=True, description='Workflow schedule'),
     'execution-id': fields.String(required=True, description='Execution id')
 })
@@ -71,6 +72,7 @@ class Workflows(Resource):
         args = parser.parse_args()
         args['workflow-id'] = xxh64_hexdigest(args['workflow-name'])
         args['status'] = 'Created'
+        args['environment'] = 'local'
         args['schedule'] = None
         args['execution'] = None
         db = get_plasma_db()
