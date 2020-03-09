@@ -41,3 +41,16 @@ def get_plasma_db():
     db = client.get_database('plasma')
     return db
 
+
+def update_project_statistics(project_id):
+    db = get_plasma_db()
+    model_count = db.models.count({"project-id":project_id})
+    workflow_count = db.workflows.count({"project-id":project_id})
+    db.projects.find_one_and_update(
+        {"project-id":project_id},
+        {"$set":{
+            "workflows":workflow_count,
+            "models":model_count
+    }})
+    return True
+
