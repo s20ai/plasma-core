@@ -48,7 +48,7 @@ def update_project_statistics(project_id):
         model_count = db.models.count({"project-id":project_id})
         workflow_count = db.workflows.count({"project-id":project_id})
         db.projects.find_one_and_update(
-            {"project-id":project_id},
+            {"project-id":int(project_id)},
             {"$set":{
                 "workflows":workflow_count,
                 "models":model_count
