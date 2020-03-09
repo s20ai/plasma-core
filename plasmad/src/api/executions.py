@@ -4,7 +4,7 @@ import werkzeug
 # Werkzeug 1.0.0 breaks flask_restplus, need to keep this line in
 # till flask restplus patches this
 werkzeug.cached_property = werkzeug.utils.cached_property
-from flask_restplus import Namespace, Resource, fields, reqparse
+from flask_restplus import Namespace, Resource, fields, reqparse, marshal
 from xxhash import xxh64_hexdigest
 from src.utils.api_utils import *
 from src.utils.decorators import *
@@ -32,11 +32,16 @@ class ExecutionList(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('workflow-id', type=str, location='args')
         args = parser.parse_args()
+        if args['workflow-id']:
+            query = {'workflow-id': args['workflow-id']}
+        else:
+            query = {}
+        print(query)
         db = get_plasma_db()
         execution_collection = db.get_collection('executions')
         executions = []
-        for item in execution_collection.find({'project-id': args['project-id']}):
-            executions.append(marshal(item, execution))
+        for item in execution_collection.find(query):
+            executions.append(marshal(item, execution_pass))
         response = generate_response(200, executions)
         return response
 
@@ -50,7 +55,7 @@ class Execution(Resource):
         execution_collection = db.get_collection('executions')
         result = execution_collection.find_one({'execution-id': execution_id})
         if result:
-            response_data = marshal(result, execution)
+            response_data = marshal(result, execution_pass)
             response = generate_response(200, response_data)
         else:
             response = generate_response(404)
