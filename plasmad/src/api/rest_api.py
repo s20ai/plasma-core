@@ -11,6 +11,7 @@ from flask_cors import CORS
 from src.api.projects import api as project_routes
 from src.api.workflows import api as workflow_routes
 from src.api.executions import api as execution_routes
+from src.api.models import api as model_routes
 import logging
 import sys
 
