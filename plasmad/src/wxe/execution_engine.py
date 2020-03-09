@@ -16,14 +16,14 @@ def create_execution_job(args):
     return output
 
 
-def run_workflow(project_id,workflow_id):
-    status = insert_in_job_queue(project_id,workflow_id,'run')
-    return status
+def run_workflow(execution_job):
+    #status = insert_in_job_queue(project_id,workflow_id,'run')
+    return True
 
 
 def stop_workflow(args):
-    status = insert_in_job_queue(project_id,workflow_id,'stop')
-    return status
+    #status = insert_in_job_queue(project_id,workflow_id,'stop')
+    return True
 
 
 @redis_operation
@@ -33,7 +33,4 @@ def insert_in_job_queue(client,project_id,workflow_id,operation):
     job['workflow-id'] = workflow_id
     job['operation'] = operation
     client.publish('workflow_execution_queue',json.dumps(job))
-    workflow = get_json('workflow',workflow_id)
-    workflow['status'] = 'Queued'
-    update_json('workflow',workflow_id,workflow)
     return True
