@@ -14,17 +14,24 @@ from src.api.executions import api as execution_routes
 import logging
 import sys
 
+# Initialize logger
 logger = logging.getLogger('plasma-api')
 
+# Initialize flask app
 app = Flask(__name__)
 api = Api(app=app, prefix='/api')
 
+# Attach namespaces to api
 api.add_namespace(project_routes,path='/project')
 api.add_namespace(workflow_routes,path='/workflow')
 api.add_namespace(execution_routes,path='/execution')
 #api.add_namespace(model_routes,path='/model')
 #api.add_namespace(component_routes,path='/component')
 #api.init_app(app)
+
+# enable CORS
+CORS(app)
+
 
 def initialize_api(api_host,api_port):
     app.run(host=api_host,port=api_port)
