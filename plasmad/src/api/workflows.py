@@ -20,7 +20,7 @@ workflow = api.model('Workflow', {
     'project-id': fields.String(required=True, description='Project id'),
     'workflow-id': fields.String(required=True, description='Workflow id'),
     'workflow-name': fields.String(required=True, description='Workflow name'),
-    'status': fields.String(required=True, description='Workflow status'),
+    'status': fields.Integer(required=True, description='Workflow status'),
     'environment': fields.String(required=True, description='Workflow execution Environment'),
     'schedule': fields.Integer(required=True, description='Workflow schedule'),
     'execution-id': fields.String(required=True, description='Execution id')
@@ -71,7 +71,7 @@ class Workflows(Resource):
                             required=True, help='workflow path')
         args = parser.parse_args()
         args['workflow-id'] = xxh64_hexdigest(args['workflow-name'])
-        args['status'] = 'Created'
+        args['status'] = 0
         args['environment'] = 'local'
         args['schedule'] = None
         args['execution'] = None
@@ -123,7 +123,7 @@ class WorkflowStart(Resource):
         db = get_plasma_db()
         execution_pass = {}
         execution_pass['workflow-id'] = workflow_id
-        execution_pass['status'] = 'Queued'
+        execution_pass['status'] = 1
         execution_pass['started-at'] = time()
         execution_pass['finished-at'] = None
         execution_pass['execution-id'] = xxh64_hexdigest(
@@ -132,7 +132,7 @@ class WorkflowStart(Resource):
         workflow_collection = db.get_collection('workflows')
         workflow_collection.find_one_and_update(
             {'workflow-id': workflow_id},
-            {'$set': {'status': 'Executing', 'execution-id': execution_pass['execution-id']}})
+            {'$set': {'status': 1, 'execution-id': execution_pass['execution-id']}})
         execution_collection.insert(execution_pass)
         run_workflow(execution_pass)
         response = generate_response(200)
@@ -148,7 +148,7 @@ class WorkflowStop(Resource):
         workflow_collection = db.get_collection('workflows')
         workflow = workflow_collection.find_one_and_update(
             {'workflow-id': workflow_id},
-            {'$set': {'status': 'Stopped'}})
+            {'$set': {'status': 2}})
         workflow = workflow_collection.find_one({'workflow-id': workflow_id})
         execution_id = workflow['execution-id']
         stop_workflow(execution_pass)
