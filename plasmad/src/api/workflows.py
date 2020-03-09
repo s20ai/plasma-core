@@ -126,7 +126,7 @@ class WorkflowStart(Resource):
         workflow_collection = db.get_collection('workflows')
         workflow_collection.find_one_and_update(
                 {'workflow-id': workflow_id},
-                {'$set':{'status':'executing','execution':execution_pass['execution-id']}})
+                {'$set':{'status':'executing','execution-id':execution_pass['execution-id']}})
         execution_collection.insert(execution_pass)
         run_workflow(execution_pass)
         response = generate_response(200)
