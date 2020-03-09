@@ -126,7 +126,7 @@ class WorkflowStart(Resource):
         workflow_collection = db.get_collection('workflows')
         workflow_collection.find_one_and_update(
                 {'workflow-id': workflow_id},
-                {'$set':{'status':'executing','execution-id':execution_pass['execution-id']}})
+                {'$set':{'status':'Executing','execution-id':execution_pass['execution-id']}})
         execution_collection.insert(execution_pass)
         run_workflow(execution_pass)
         response = generate_response(200)
@@ -142,8 +142,8 @@ class WorkflowStop(Resource):
         workflow_collection = db.get_collection('workflows')
         workflow = workflow_collection.find_one_and_update(
                 {'workflow-id': workflow_id},
-                {'$set':{'status':'stopped'}})
-        workflow = workflow_collection.find({'workflow-id': workflow_id})
+                {'$set':{'status':'Stopped'}})
+        workflow = workflow_collection.find_one({'workflow-id': workflow_id})
         execution_id = workflow['execution-id']
         stop_workflow(execution_pass)
         response = generate_response(200)
