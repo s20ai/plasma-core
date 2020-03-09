@@ -100,10 +100,10 @@ class Workflows(Resource):
     def delete(self, workflow_id):
         db = get_plasma_db()
         workflow_collection = db.get_collection('workflows')
-        workflow = workflow_collection.find({"workflow-id":workflow_id})
+        workflow = workflow_collection.find_one({"workflow-id":workflow_id})
         deleted_workflow = workflow_collection.delete_one({"workflow-id": workflow_id})
-        update_project_statistics(workflow['project-id'])
         if deleted_workflow.deleted_count == 1:
+            update_project_statistics(workflow['project-id'])
             response = generate_response(200)
         else:
             response = generate_response(404)
@@ -127,7 +127,7 @@ class WorkflowStart(Resource):
         workflow_collection.find_one_and_update(
                 {'workflow-id': workflow_id},
                 {'$set':{'status':'executing','execution':execution_pass['execution-id']}})
-        execution_collection.insert(execution)
+        execution_collection.insert(execution_pass)
         run_workflow(execution_pass)
         response = generate_response(200)
         return response

@@ -105,9 +105,11 @@ class Project(Resource):
     @api.doc('Delete a model')
     def delete(self, model_id):
         db = get_plasma_db()
-        model_collection = db.get_collection('models')
+        model_collection = db.get_collection('models') 
+        model = model_collection.find({'model-id':model_id})
         deleted_model = model_collection.delete_one({"model-id": model_id})
         if deleted_model.deleted_count == 1:
+            update_project_statistics(model['project-id'])
             response = generate_response(200)
         else:
             response = generate_response(404)
