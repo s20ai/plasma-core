@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import config
-import sys,os
+import sys
+import os
 #from src.utils.rejson import *
 from src.utils.decorators import *
 import json
+
 
 def create_execution_job(args):
     if config.EXECUTION_CONTEXT == 'process':
@@ -27,10 +29,10 @@ def stop_workflow(args):
 
 
 @redis_operation
-def insert_in_job_queue(client,project_id,workflow_id,operation):
+def insert_in_job_queue(client, project_id, workflow_id, operation):
     job = {}
     job['project-id'] = project_id
     job['workflow-id'] = workflow_id
     job['operation'] = operation
-    client.publish('workflow_execution_queue',json.dumps(job))
+    client.publish('workflow_execution_queue', json.dumps(job))
     return True

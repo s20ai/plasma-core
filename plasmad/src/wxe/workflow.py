@@ -3,8 +3,9 @@
 import logging
 import yaml
 
+
 class Workflow:
-    def __init__(self,workflow_path):
+    def __init__(self, workflow_path):
         self.logger = logging.getLogger('Workflow')
         self.name = None
         self.version = None
@@ -13,12 +14,10 @@ class Workflow:
         self.steps = None
         self.workflow = self.load()
 
-
     def load(self):
         with open(self.path) as workflow_file:
             workflow = yaml.load(workflow_file, Loader=yaml.FullLoader)
         return workflow
-
 
     def validate(self):
         try:
@@ -32,8 +31,7 @@ class Workflow:
             self.logger.error(e)
             return False
 
-
-    def parse_workflow(self,workflow):
+    def parse_workflow(self, workflow):
         workflow = workflow['workflow']
         components = list(workflow.keys())
         steps = []

@@ -5,6 +5,7 @@ from logging import getLogger
 
 logger = getLogger('decorators')
 
+
 def log_exceptions(f):
     @wraps(f)
     def wrapped_function(*args, **kwargs):
@@ -17,7 +18,6 @@ def log_exceptions(f):
     return wrapped_function
 
 
-
 def redis_operation(f):
     @wraps(f)
     def wrapped_function(*args, **kwargs):
@@ -26,7 +26,6 @@ def redis_operation(f):
             client = redis.Redis()
             return f(client, *args, **kwargs)
         except Exception as e:
-            logger.error('Redis Exception | %s | %s |' %(function_name, str(e)))
+            logger.error('Redis Exception | %s | %s |' %
+                         (function_name, str(e)))
     return wrapped_function
-
-

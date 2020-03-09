@@ -68,7 +68,7 @@ responses = {
     504: ('Gateway Timeout',
           'The gateway server did not receive a timely response'),
     505: ('HTTP Version Not Supported', 'Cannot fulfill request.'),
-    }
+}
 
 
 def generate_response(code, data=None):
@@ -85,4 +85,3 @@ def generate_response(code, data=None):
     if data is not None:
         response['data'] = data
     return response, code
-

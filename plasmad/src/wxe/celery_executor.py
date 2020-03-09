@@ -12,8 +12,10 @@ import subprocess
 logger = logging.getLogger("WXE")
 # fix import config realtive import issues
 # celery_executor = Celery('celery_executor',broker=celery_config['BROKER_URL'],backend=celery_config['BACKEND_URL'])
-celery_executor = Celery('celery_executor',broker='redis://localhost:6379/0',backend=celery_config['BACKEND_URL'])
+celery_executor = Celery(
+    'celery_executor', broker='redis://localhost:6379/0', backend=celery_config['BACKEND_URL'])
 project_config = None
+
 
 def component_loader(component_name, component_path):
     spec = importlib.util.spec_from_file_location(
