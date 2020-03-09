@@ -12,6 +12,7 @@ from src.api.projects import api as project_routes
 from src.api.workflows import api as workflow_routes
 from src.api.executions import api as execution_routes
 from src.api.models import api as model_routes
+from src.api.settings import api as settings_routes
 import logging
 import sys
 
@@ -27,6 +28,7 @@ api.add_namespace(project_routes, path='/project')
 api.add_namespace(workflow_routes, path='/workflow')
 api.add_namespace(execution_routes, path='/execution')
 api.add_namespace(model_routes, path='/model')
+api.add_namespace(settings_routes, path='/settings')
 # api.add_namespace(component_routes,path='/component')
 # api.init_app(app)
 
