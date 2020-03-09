@@ -33,10 +33,14 @@ class WorkflowList(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('project-id', type=str, location='args')
         args = parser.parse_args()
+        if args['project-id']:
+            query = {'project-id':args['project-id']}
+        else:
+            query = {}
         db = get_plasma_db()
         workflow_collection = db.get_collection('workflows')
         workflows = []
-        for item in workflow_collection.find({'project-id':args['project-id']}):
+        for item in workflow_collection.find(query):
             workflows.append(marshal(item, workflow))
         response = generate_response(200, workflows)
         return response
