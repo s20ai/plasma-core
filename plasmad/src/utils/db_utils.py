@@ -43,14 +43,16 @@ def get_plasma_db():
 
 
 def update_project_statistics(project_id):
-    db = get_plasma_db()
-    model_count = db.models.count({"project-id":project_id})
-    workflow_count = db.workflows.count({"project-id":project_id})
-    db.projects.find_one_and_update(
-        {"project-id":project_id},
-        {"$set":{
-            "workflows":workflow_count,
-            "models":model_count
-    }})
-    return True
-
+    try:
+        db = get_plasma_db()
+        model_count = db.models.count({"project-id":project_id})
+        workflow_count = db.workflows.count({"project-id":project_id})
+        db.projects.find_one_and_update(
+            {"project-id":project_id},
+            {"$set":{
+                "workflows":workflow_count,
+                "models":model_count
+        }})
+        return True
+    except Exception as e:
+        logger.error('Unable to update project statistics : '+str(e))
