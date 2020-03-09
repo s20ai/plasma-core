@@ -8,7 +8,7 @@ from xxhash import xxh32_intdigest
 from flask_restplus import Namespace, Resource, fields, marshal, reqparse
 from src.utils.api_utils import *
 from src.utils.decorators import *
-from src.utils.db_utils import get_plasma_db
+from src.utils.db_utils import *
 from time import time
 
 api = Namespace('model', description='routes for model management')
@@ -78,6 +78,7 @@ class Project(Resource):
         db = get_plasma_db()
         model_collection = db.get_collection('models')
         model_collection.insert(dict(args))
+        update_project_statistics(args['project-id'])
         response_data = {'model-id':model_id}
         response = generate_response(201,response_data)
         return response
@@ -89,10 +90,12 @@ class Project(Resource):
         args = parser.parse_args()
         db = get_plasma_db()
         model_collection = db.get_collection('models')
+        model = model_collection.find({'model-id':model_id})
         updated_resource = model_collection.find_one_and_update(
             {"model-id": model_id},
             {"$set": dict(args)}
         )
+        update_project_statistics(model['model-id'])
         if updated_resource:
             response = generate_response(204)
         else:

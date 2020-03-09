@@ -8,7 +8,7 @@ from flask_restplus import Namespace, Resource, fields, reqparse, marshal
 from xxhash import xxh64_hexdigest
 from src.utils.api_utils import *
 from src.utils.decorators import *
-from src.utils.db_utils import get_plasma_db
+from src.utils.db_utils import *
 from src.api.executions import execution_pass
 from src.wxe.execution_engine import run_workflow, stop_workflow
 from time import time
@@ -75,6 +75,7 @@ class Workflows(Resource):
         db = get_plasma_db()
         workflow_collection = db.get_collection('workflows')
         workflow_collection.insert(dict(args))
+        update_project_statistics(args['project-id'])
         response = generate_response(201)
         return response
 
@@ -99,7 +100,9 @@ class Workflows(Resource):
     def delete(self, workflow_id):
         db = get_plasma_db()
         workflow_collection = db.get_collection('workflows')
+        workflow = workflow_collection.find({"workflow-id":workflow_id})
         deleted_workflow = workflow_collection.delete_one({"workflow-id": workflow_id})
+        update_project_statistics(workflow['project-id'])
         if deleted_workflow.deleted_count == 1:
             response = generate_response(200)
         else:
