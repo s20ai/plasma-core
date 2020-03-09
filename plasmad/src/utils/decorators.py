@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 from functools import wraps
+from logging import getLogger
+
+logger = getLogger('decorators')
 
 def log_exceptions(f):
     @wraps(f)
@@ -26,10 +29,4 @@ def redis_operation(f):
             logger.error('Redis Exception | %s | %s |' %(function_name, str(e)))
     return wrapped_function
 
-
-@log_exceptions
-def get_plasma_db():
-    client = MongoClient()
-    db = client.get_database('plasma')
-    return db
 

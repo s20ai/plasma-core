@@ -8,6 +8,7 @@ from xxhash import xxh32_intdigest
 from flask_restplus import Namespace, Resource, fields, marshal, reqparse
 from src.utils.api_utils import *
 from src.utils.decorators import *
+from src.utils.db_utils import get_plasma_db
 
 api = Namespace('project', description='routes for project management')
 
@@ -56,11 +57,13 @@ class Project(Resource):
         parser.add_argument('workflows', type=int, default=0, help='number of connected workfows')
         parser.add_argument('models', type=int, default=0, help='number of connected models')
         args = parser.parse_args()
-        args['project-id'] = xxh32_intdigest(args['project-name'])
+        project_id = xxh32_intdigest(args['project-name'])
+        args['project-id'] = project_id
         db = get_plasma_db()
         project_collection = db.get_collection('projects')
         project_collection.insert(dict(args))
-        response = generate_response(201)
+        response_data = {'project-id':project_id}
+        response = generate_response(201,response_data)
         return response
 
     @api.doc('Update an existing project')

@@ -8,6 +8,8 @@ from flask_restplus import Namespace, Resource, fields, reqparse
 from xxhash import xxh64_hexdigest
 from src.utils.api_utils import *
 from src.utils.decorators import *
+from src.utils.db_utils import get_plasma_db
+
 
 api = Namespace('execution', description='routes for execution management')
 

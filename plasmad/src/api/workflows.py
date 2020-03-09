@@ -4,10 +4,11 @@ import werkzeug
 # Werkzeug 1.0.0 breaks flask_restplus, need to keep this line in 
 # till flask restplus patches this
 werkzeug.cached_property = werkzeug.utils.cached_property
-from flask_restplus import Namespace, Resource, fields, reqparse
+from flask_restplus import Namespace, Resource, fields, reqparse, marshal
 from xxhash import xxh64_hexdigest
 from src.utils.api_utils import *
 from src.utils.decorators import *
+from src.utils.db_utils import get_plasma_db
 from src.api.executions import execution_pass
 from src.wxe.execution_engine import run_workflow, stop_workflow
 from time import time
@@ -19,7 +20,7 @@ workflow = api.model('Workflow', {
     'project-id': fields.String(required=True, description='Project id'),
     'workflow-id': fields.String(required=True, description='Workflow id'),
     'workflow-name': fields.String(required=True, description='Workflow name'),
-    'status': fields.Integer(required=True, description='Workflow status'),
+    'status': fields.String(required=True, description='Workflow status'),
     'schedule': fields.Integer(required=True, description='Workflow schedule'),
     'execution-id': fields.String(required=True,description='Execution id')
 })
