@@ -2,6 +2,7 @@
 
 from functools import wraps
 from logging import getLogger
+import redis
 
 logger = getLogger('decorators')
 

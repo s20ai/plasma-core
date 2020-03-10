@@ -133,8 +133,8 @@ class WorkflowStart(Resource):
         workflow_collection.find_one_and_update(
             {'workflow-id': workflow_id},
             {'$set': {'status': 1, 'execution-id': execution_pass['execution-id']}})
-        execution_collection.insert(execution_pass)
         run_workflow(execution_pass)
+        execution_collection.insert(execution_pass)
         response = generate_response(200)
         return response
 
@@ -151,6 +151,6 @@ class WorkflowStop(Resource):
             {'$set': {'status': 2}})
         workflow = workflow_collection.find_one({'workflow-id': workflow_id})
         execution_id = workflow['execution-id']
-        stop_workflow(execution_pass)
+        stop_workflow(execution_id)
         response = generate_response(200)
         return response
