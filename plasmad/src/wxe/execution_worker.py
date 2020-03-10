@@ -2,19 +2,13 @@
 
 import logging
 from workflow import Workflow
-from celery import Celery
+from time import sleep
+import redis
 import yaml
 import os
 import venv
 import sys
 import subprocess
-
-logger = logging.getLogger("WXE")
-# fix import config realtive import issues
-# celery_executor = Celery('celery_executor',broker=celery_config['BROKER_URL'],backend=celery_config['BACKEND_URL'])
-celery_executor = Celery(
-    'celery_executor', broker='redis://localhost:6379/0', backend=celery_config['BACKEND_URL'])
-project_config = None
 
 
 def component_loader(component_name, component_path):
@@ -124,7 +118,6 @@ def execute_workflow(workflow_steps):
         exit(1)
 
 
-@celery_executor.task
 def celery_workflow_executor(args):
     global project_config
     workflow_name = args['workflow-name']
@@ -147,3 +140,23 @@ def celery_workflow_executor(args):
     else:
         logger.error('invalid workflow')
         exit(1)
+
+
+# resolve details of workflow and project
+# check paths
+# validate components 
+# validate workflows
+# setup environment
+# execute workflow
+
+if __name__ == '__main__':
+    client = redis.Redis()
+    subscriber = client.pubsub()
+    subscriber.subscribe('execution_queue')
+    while True:
+        data = subscriber.get_message()
+        if data:
+            if data['type'] == 'message':
+                print(data)
+        else:
+            sleep(1)
