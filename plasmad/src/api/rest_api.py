@@ -28,7 +28,7 @@ api.add_namespace(project_routes, path='/project')
 api.add_namespace(workflow_routes, path='/workflow')
 api.add_namespace(execution_routes, path='/execution')
 api.add_namespace(model_routes, path='/model')
-api.add_namespace(settings_routes, path='/settings')
+api.add_namespace(settings_routes, path='/setting')
 # api.add_namespace(component_routes,path='/component')
 # api.init_app(app)
 
