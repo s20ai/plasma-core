@@ -40,7 +40,7 @@ class Settings(Resource):
         args = parser.parse_args()
         db = get_plasma_db()
         settings_collection = db.get_collection('settings')
-        updated_resource = project_collection.find_one_and_update(
+        updated_resource = settings_collection.find_one_and_update(
             {"settings-type": 'general'},
             {"$set": dict(args)['update']}
         )
