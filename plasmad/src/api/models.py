@@ -101,7 +101,7 @@ class Project(Resource):
         model = model_collection.find({'model-id': model_id})
         updated_resource = model_collection.find_one_and_update(
             {"model-id": model_id},
-            {"$set": dict(args)}
+            {"$set": dict(args)['update']}
         )
         update_project_statistics(model['model-id'])
         if updated_resource:

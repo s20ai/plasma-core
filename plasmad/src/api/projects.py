@@ -80,7 +80,7 @@ class Project(Resource):
         project_collection = db.get_collection('projects')
         updated_resource = project_collection.find_one_and_update(
             {"project-id": project_id},
-            {"$set": dict(args)}
+            {"$set": dict(args)['update']}
         )
         if updated_resource:
             response = generate_response(204)

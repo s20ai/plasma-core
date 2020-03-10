@@ -92,7 +92,7 @@ class Workflows(Resource):
         workflow_collection = db.get_collection('workflows')
         updated_resource = workflow_collection.find_one_and_update(
             {"workflow-id": workflow_id},
-            {"$set": dict(args)}
+            {"$set": dict(args)['update']}
         )
         if updated_resource:
             response = generate_response(204)

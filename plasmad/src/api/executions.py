@@ -71,7 +71,7 @@ class Execution(Resource):
         execution_collection = db.get_collection('executions')
         updated_resource = execution_collection.find_one_and_update(
             {"execution-id": execution_id},
-            {"$set": dict(args)}
+            {"$set": dict(args)['update']}
         )
         if updated_resource:
             response = generate_response(204)
