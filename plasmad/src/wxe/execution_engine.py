@@ -22,8 +22,7 @@ def create_execution_job(args):
 @redis_operation
 def run_workflow(client,execution_job):
     try:
-        execution_string = json.dumps(execution_job)
-        client.publish('execution_queue',execution_string)
+        client.publish('execution_queue',json.dumps(execution_job))
         return True
     except Exception as e:
         logger.error('Failed to insert execution job in queue : '+str(e))
