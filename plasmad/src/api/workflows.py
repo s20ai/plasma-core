@@ -140,6 +140,7 @@ class WorkflowStart(Resource):
         payload['project-path'] = project['project-path']
         payload['environment'] = workflow['environment'] 
         payload['workflow-id'] = workflow_id
+        payload['workflow-name'] = workflow['workflow-name']
         payload['execution-id'] = execution_pass['execution-id']
         run_workflow(payload)
         execution_collection.insert(execution_pass)
