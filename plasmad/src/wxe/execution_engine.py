@@ -5,9 +5,13 @@ import sys
 import os
 import logging
 from src.utils.decorators import *
+from src.utils.db_utils import get_plasma_db
 import json
 
 logger = logging.getLogger('WXE')
+
+
+
 
 def create_execution_job(args):
     if config.EXECUTION_CONTEXT == 'process':
@@ -23,6 +27,11 @@ def create_execution_job(args):
 def run_workflow(client,execution_job):
     try:
         client.publish('execution_queue',json.dumps(execution_job))
+        db = get_plasma_db()
+        db.workflows.find_one_and_update(
+                {'workflow-id':execution_job['workflow-id']},
+                {'$set':{'status':1})
+        )
         return True
     except Exception as e:
         logger.error('Failed to insert execution job in queue : '+str(e))
@@ -33,6 +42,11 @@ def run_workflow(client,execution_job):
 def stop_workflow(client, execution_id):
     try:
         client.publish(execution_id,'stop')
+        db = get_plasma_db()
+        db.workflows.find_one_and_update(
+                {'workflow-id':execution_job['workflow-id']},
+                {'$set':{'status':4})
+        )
         return True
     except Exception as e:
         logger.error('Failed to stop execution job in : '+str(e))
