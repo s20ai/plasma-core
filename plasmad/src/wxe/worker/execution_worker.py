@@ -9,6 +9,9 @@ import os
 import venv
 import sys
 import subprocess
+import json
+import requests
+from time import sleep
 
 
 def component_loader(component_name, component_path):
@@ -118,6 +121,9 @@ def execute_workflow(workflow_steps):
         exit(1)
 
 
+
+
+
 def celery_workflow_executor(args):
     global project_config
     workflow_name = args['workflow-name']
@@ -148,15 +154,59 @@ def celery_workflow_executor(args):
 # validate workflows
 # setup environment
 # execute workflow
+#################################################################################################################################################
+
+def update_execution_job(execution_id, update):
+    url = 'http://0.0.0.0:8196/api/execution/'+execution_id
+    json = {'update':update}
+    response = requests.put(url,json=json)
+    if response.status_code == 204:
+        output = True
+    else:
+        output = False
+    return output
+
+def update_workflow(workflow_id, update):
+    url = 'http://0.0.0.0:8196/api/workflow/'+workflow_id
+    json = {'update':update}
+    response = requests.put(url,json=json)
+    if response.status_code == 204:
+        output = True
+    else:
+        output = False
+    return output
+
+
+def update_status(workflow_id,execution_id,status_code):
+    update_workflow(
+            workflow_id, 
+            {"status":status_code}
+    )
+    update_execution_job(
+            execution_id, 
+            {"status":status_code}
+    )
+
+
+
+def validate_job(execution_job):
+    update_status(
+            execution_job['workflow-id'],
+            execution_job['execution-id'],
+            2
+    )
+
+
 
 if __name__ == '__main__':
     client = redis.Redis()
     subscriber = client.pubsub()
     subscriber.subscribe('execution_queue')
     while True:
-        data = subscriber.get_message()
-        if data:
-            if data['type'] == 'message':
-                print(data)
+        message = subscriber.get_message()
+        if message:
+            if message['type'] == 'message':
+                execution_job = json.loads(message['data'])
+                valid = validate_job(execution_job)
         else:
-            sleep(1)
+            sleep(2)
