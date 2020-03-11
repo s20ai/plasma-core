@@ -61,7 +61,7 @@ class Project(Resource):
         parser.add_argument('models', type=int, default=0,
                             help='number of connected models')
         args = parser.parse_args()
-        project_id = xxh32_intdigest(args['project-name'])
+        project_id = str(xxh32_intdigest(args['project-name']))
         args['project-id'] = project_id
         db = get_plasma_db()
         project_collection = db.get_collection('projects')
