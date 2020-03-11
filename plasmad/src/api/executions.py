@@ -17,7 +17,7 @@ api = Namespace('execution', description='routes for execution management')
 execution_pass = api.model('ExecutionPass', {
     'workflow-id': fields.String(required=True, description='Execution passes'),
     'execution-id': fields.String(required=True, description='Execution passes'),
-    'status': fields.String(required=True, description='State of execution'),
+    'status': fields.Integer(required=True, description='State of execution'),
     'started-at': fields.String(required=True, description='Execution start timestamp'),
     'finished-at': fields.String(required=True, description='Execution end timestamp'),
     'time-taken': fields.String(required=True, description='Time taken by execution pass'),
