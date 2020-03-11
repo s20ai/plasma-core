@@ -43,13 +43,14 @@ def stop_workflow(client, execution_id):
     try:
         client.publish(execution_id,'stop')
         db = get_plasma_db()
+        execution = db.executions.find_one({"execution-id":execution_id})
         db.workflows.find_one_and_update(
-                {'workflow-id':execution_job['workflow-id']},
+                {'workflow-id':execution['workflow-id']},
                 {'$set':{'status':4}}
         )
         return True
     except Exception as e:
-        logger.error('Failed to stop execution job in : '+str(e))
+        logger.error('Failed to stop execution job  : '+str(e))
         return False
    
 
