@@ -13,6 +13,21 @@ import json
 import requests
 from time import sleep
 
+logger = logging.getLogger(' Worker ')
+
+
+def setup_loggers(execution_id, log_path):
+    logger = logging.getLogger(execution_id+'_executor')
+    log_file = log_path+'/'+execution_id+'.log'
+    file_handler = handler = RotatingFileHandler(log_file)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    handlers = [stdout_handler, file_handler]
+    format_string = '%(asctime)s | %(levelname)7s | %(message)s'
+    date_format = '%m/%d/%Y %I:%M:%S %p'
+    logging.basicConfig(handlers=handlers, level=logging.DEBUG,
+                        format=format_string, datefmt=date_format)
+
+
 
 def component_loader(component_name, component_path):
     spec = importlib.util.spec_from_file_location(
@@ -121,92 +136,70 @@ def execute_workflow(workflow_steps):
         exit(1)
 
 
-
-
-
-def celery_workflow_executor(args):
-    global project_config
-    workflow_name = args['workflow-name']
-    project_config = args['config']
-    workflow_path = project_config['paths']['workflows_path'] + workflow_name
-    workflow = Workflow(workflow_path)
-    workflow_valid = workflow.validate()
-    if workflow_valid:
-        components = verify_components(workflow)
-        if not components:
-            logger.error('components declared in workflow are missing')
-            exit(1)
-        #requirements = generate_workflow_requirements(workflow)
-        #virtual_environment = setup_virtual_environment(requirements, workflow_name)
-        state = execute_workflow(workflow.steps)
-        if state is True:
-            logger.info('workflow executed')
-        else:
-            logger.info('failed to execute workflow')
+def verify_components(workflow,project_paths):
+    logger.info('verifying components')
+    components_path = project_paths['components_path']
+    local_components = os.listdir(components_path)
+    workflow_components = list(workflow.workflow['workflow'].keys())
+    missing_components = set(workflow_components) - set(local_components)
+    if(len(missing_components) == 0):
+        return True
     else:
-        logger.error('invalid workflow')
-        exit(1)
-
-
-# resolve details of workflow and project
-# check paths
-# validate components 
-# validate workflows
-# setup environment
-# execute workflow
-#################################################################################################################################################
-
-def update_execution_job(execution_id, update):
-    url = 'http://0.0.0.0:8196/api/execution/'+execution_id
-    json = {'update':update}
-    response = requests.put(url,json=json)
-    if response.status_code == 204:
-        output = True
-    else:
-        output = False
-    return output
-
-def update_workflow(workflow_id, update):
-    url = 'http://0.0.0.0:8196/api/workflow/'+workflow_id
-    json = {'update':update}
-    response = requests.put(url,json=json)
-    if response.status_code == 204:
-        output = True
-    else:
-        output = False
-    return output
-
-
-def update_status(workflow_id,execution_id,status_code):
-    update_workflow(
-            workflow_id, 
-            {"status":status_code}
-    )
-    update_execution_job(
-            execution_id, 
-            {"status":status_code}
-    )
-
+        logger.error('component not found : ' + ', '.join(missing_components))
+        return False
 
 
 def validate_job(execution_job):
-    update_status(
-            execution_job['workflow-id'],
-            execution_job['execution-id'],
-            2
-    )
+    # Change status codes to preocessing
+    workflow_id = execution_job['workflow-id']
+    execution_id = ['execution-id']
+    update_status(workflow_id, execution_id, 2)
+    try:
+        # Validate plasma project path
+        project_path = execution_job['project-path']
+        config_file = json.load(open('project_path'+'/.plasma.json'))
+        execution_job['project-paths'] = config_file['paths']
+        # Load and validate workflow
+        workflow_path = execution_job['project-path']['workflows_path'] + \
+            execution_job['workflow-name']
+        workflow = Workflow(workflow_path)
+        workflow_valid = workflow.validate()
+        # validate components
+        components_valid = validate_components(
+                            workflow,
+                            execution_job['project-paths']
+                            )
+        return workflow
+    except Exception as e:
+        logger.error('Failed to validate job :'+str(e))
+        update_status(workflow_id, execution_id, -1)
+        return False
 
 
+def run(execution_job):
+    workflow_id = execution_job['workflow-id']
+    execution_id = execution_job['execution-id']
+    workflow = validate_job(execution_job)
+    if workflow:
+        update_status(workflow_id, execution_id, 3)
+        execution_successful = execute_workflow(workflow)
+        if execution_successful:
+            update_status(workflow_id, execution_id, 5)
+        else:
+            update_status(workflow_id, execution_id, -1)
 
 if __name__ == '__main__':
-    client = redis.Redis()
-    subscriber = client.pubsub()
-    subscriber.subscribe('execution_queue')
-    while True:
-        message = subscriber.get_message()
-        if message:
-            if message['type'] == 'message':
-                execution_job = json.loads(message['data'])
-                valid = validate_job(execution_job)
-        else:
-            sleep(2)
+    try:
+        client = redis.Redis()
+        subscriber = client.pubsub()
+        subscriber.subscribe('execution_queue')
+        while True:
+            message = subscriber.get_message()
+            if message:
+                if message['type'] == 'message':
+                    execution_job = json.loads(message['data'])
+                    run(execution_job)
+            else:
+                sleep(2)
+    except KeyboardInterrupt:
+        logger.error('Keyboard Interrupt')
