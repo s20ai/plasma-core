@@ -151,9 +151,6 @@ class WorkflowStop(Resource):
     def post(self, workflow_id):
         db = get_plasma_db()
         workflow_collection = db.get_collection('workflows')
-        workflow = workflow_collection.find_one_and_update(
-            {'workflow-id': workflow_id},
-            {'$set': {'status': 4}})
         workflow = workflow_collection.find_one({'workflow-id': workflow_id})
         execution_id = workflow['execution-id']
         stop_workflow(execution_id)
