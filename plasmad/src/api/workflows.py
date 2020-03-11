@@ -129,11 +129,16 @@ class WorkflowStart(Resource):
         execution_pass['execution-id'] = xxh64_hexdigest(
             workflow_id+str(time()))
         execution_collection = db.get_collection('executions')
-        workflow_collection = db.get_collection('workflows')
-        workflow_collection.find_one_and_update(
-            {'workflow-id': workflow_id},
-            {'$set': {'status': 1, 'execution-id': execution_pass['execution-id']}})
-        run_workflow(execution_pass)
+        workflow = db.workflows.find_one({"workflow-id":workflow_id})
+        project = db.projects.find_one({"project-id":workflow['project-id']})
+        payload = {}
+        payload['project-id'] = project['project-id']
+        payload['project-name'] = project['project-name']
+        payload['project-path'] = project['project-path']
+        payload['environment'] = workflow['environment'] 
+        payload['workflow-id'] = workflow_id
+        payload['execution-id'] = execution_pass['execution-id']
+        run_workflow(payload)
         execution_collection.insert(execution_pass)
         response = generate_response(200)
         return response
@@ -148,7 +153,7 @@ class WorkflowStop(Resource):
         workflow_collection = db.get_collection('workflows')
         workflow = workflow_collection.find_one_and_update(
             {'workflow-id': workflow_id},
-            {'$set': {'status': 2}})
+            {'$set': {'status': 4}})
         workflow = workflow_collection.find_one({'workflow-id': workflow_id})
         execution_id = workflow['execution-id']
         stop_workflow(execution_id)
