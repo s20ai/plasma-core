@@ -35,10 +35,3 @@ def update_status(workflow_id, execution_id, status_code):
         {"status": status_code}
     )
 
-
-def validate_job(execution_job):
-    update_status(
-        execution_job['workflow-id'],
-        execution_job['execution-id'],
-        2
-    )
