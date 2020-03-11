@@ -43,7 +43,10 @@ class WorkflowList(Resource):
         workflows = []
         for item in workflow_collection.find(query):
             workflows.append(marshal(item, workflow))
-        response = generate_response(200, workflows)
+        if workflows:
+            response = generate_response(200, workflows)
+        else:
+            response = generate_response(404)
         return response
 
 
