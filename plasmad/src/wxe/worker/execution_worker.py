@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import logging
+from utils import *
 from workflow import Workflow
-from time import sleep
+from time import sleep,time
 import redis
 import yaml
 import os
@@ -152,12 +153,12 @@ def verify_components(workflow,project_paths):
 def validate_job(execution_job):
     # Change status codes to preocessing
     workflow_id = execution_job['workflow-id']
-    execution_id = ['execution-id']
+    execution_id = execution_job['execution-id']
     update_status(workflow_id, execution_id, 2)
     try:
         # Validate plasma project path
         project_path = execution_job['project-path']
-        config_file = json.load(open('project_path'+'/.plasma.json'))
+        config_file = json.load(open(project_path+'/.plasma.json'))
         execution_job['project-paths'] = config_file['paths']
         # Load and validate workflow
         workflow_path = execution_job['project-path']['workflows_path'] + \
@@ -187,6 +188,11 @@ def run(execution_job):
             update_status(workflow_id, execution_id, 5)
         else:
             update_status(workflow_id, execution_id, -1)
+        update_execution_job(execution_id, {"finished-at":timestamp})
+    else:
+        update_status(workflow_id, execution_id, -1)
+    timestamp = str(time())
+    update_execution_job(execution_id, {"finished-at":timestamp})
 
 if __name__ == '__main__':
     try:
