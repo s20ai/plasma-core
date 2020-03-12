@@ -19,6 +19,7 @@ model = api.model('Project', {
     'model-id': fields.String(required=True, description='Model Id'),
     'model-name': fields.String(required=True, description='Model Name'),
     'model-path': fields.String(required=True, description='Model file path'),
+    'model-version': fields.String(required=True, description='Model version'),
     'type': fields.String(required=True, description='Model Type'),
     'framework': fields.String(required=True, description='Model Framework'),
     'metrics': fields.String(required=True, description='Model Metrics'),
@@ -72,6 +73,8 @@ class Project(Resource):
                             required=True, help='model name')
         parser.add_argument('model-path', type=str,
                             required=True, help='model path')
+        parser.add_argument('model-version', type=str,
+                            required=True, help='model version')
         parser.add_argument(
             'type', type=str, default='undefined', help='model type')
         parser.add_argument('framework', type=str,
