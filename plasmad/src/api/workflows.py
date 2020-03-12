@@ -22,7 +22,7 @@ workflow = api.model('Workflow', {
     'workflow-name': fields.String(required=True, description='Workflow name'),
     'status': fields.Integer(required=True, description='Workflow status'),
     'environment': fields.String(required=True, description='Workflow execution Environment'),
-    'schedule': fields.Integer(required=True, description='Workflow schedule'),
+    'schedule': fields.String(required=True, description='Workflow schedule'),
     'execution-id': fields.String(required=True, description='Execution id')
 })
 
