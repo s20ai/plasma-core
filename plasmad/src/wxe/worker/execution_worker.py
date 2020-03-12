@@ -7,10 +7,9 @@ from time import sleep, time
 import redis
 import yaml
 import os
-import venv
 import sys
+import pip
 import importlib
-import subprocess
 from logging.handlers import RotatingFileHandler
 import json
 import requests
@@ -42,9 +41,9 @@ def component_loader(component_name, component_path):
     return component
 
 
-def generate_workflow_requirements(workflow):
+def setup_workflow_requirements(workflow):
     workflow_name = workflow.name
-    logger.info('generating workflow requirements')
+    logger.info('Generating workflow requirements')
     try:
         components = list(workflow.workflow['workflow'].keys())
         requirements_list = []
@@ -55,31 +54,11 @@ def generate_workflow_requirements(workflow):
                 requirements = requirements_file.read().split('\n')
                 requirements = [x for x in requirements if x]
                 requirements_list += requirements
-        workflow_requirements_path = project_config['paths']['data_path'] + \
-            workflow_name+'.requirements'
-        with open(workflow_requirements_path, 'w') as file:
-            requirements_string = '\n'.join(requirements_list)
-            file.write(requirements_string)
-        return workflow_requirements_path
+        logger.info('Installing workflow requirements')
+        for each in requirements_list:
+            pip.main(['install',each])
     except Exception as e:
         logger.error('failed to generate requirements file')
-        logger.error(e)
-        exit(1)
-
-
-def setup_virtual_environment(requirements_path, workflow_name):
-    try:
-        logger.info('setting up virtual environment')
-        venv_path = project_config['paths']['data_path']+workflow_name+'_venv'
-        venv.create(venv_path)
-        logger.info('activating virtual environment')
-        output = os.system('bash '+venv_path+'/bin/activate')
-        logger.info('installing dependencies')
-        output = subprocess.check_output(
-            ['pip3', 'install', '-r', requirements_path])
-        return True
-    except Exception as e:
-        logger.error("unable to setup virtual environment")
         logger.error(e)
         exit(1)
 
@@ -175,7 +154,8 @@ def run(execution_job):
     if workflow:
         update_status(workflow_id, execution_id, 3)
         setup_logger(execution_id, execution_job['project-paths']['log_path'])
-        eut xecution_successful = execute_workflow(workflow.steps)
+        setup_workflow_requirements(workflow)
+        execution_successful = execute_workflow(workflow.steps)
         if execution_successful:
             update_status(workflow_id, execution_id, 5)
         else:
