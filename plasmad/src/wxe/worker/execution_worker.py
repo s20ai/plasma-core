@@ -3,7 +3,7 @@
 import logging
 from utils import *
 from workflow import Workflow
-from time import sleep,time
+from time import sleep, time
 import redis
 import yaml
 import os
@@ -19,6 +19,7 @@ from time import sleep
 logger = logging.getLogger(' Worker ')
 project_config = {}
 
+
 def setup_logger(execution_id, log_path):
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
@@ -31,7 +32,6 @@ def setup_logger(execution_id, log_path):
     date_format = '%m/%d/%Y %I:%M:%S %p'
     logging.basicConfig(handlers=handlers, level=logging.DEBUG,
                         format=format_string, datefmt=date_format)
-
 
 
 def component_loader(component_name, component_path):
@@ -107,7 +107,7 @@ def execute_step(step):
         output = component.main(step)
         return output
     except Exception as e:
-        logger.error('failed to execute step : %s'%step['component'])
+        logger.error('failed to execute step : %s' % step['component'])
         logger.error(e)
 
 
@@ -126,7 +126,7 @@ def execute_workflow(workflow_steps):
         return False
 
 
-def validate_components(workflow,project_paths):
+def validate_components(workflow, project_paths):
     logger.info('verifying components')
     components_path = project_paths['components_path']
     local_components = os.listdir(components_path)
@@ -156,9 +156,9 @@ def validate_job(execution_job):
         workflow_valid = workflow.validate()
         # validate components
         components_valid = validate_components(
-                            workflow,
-                            execution_job['project-paths']
-                            )
+            workflow,
+            execution_job['project-paths']
+        )
         return workflow
     except Exception as e:
         logger.error('Failed to validate job :'+str(e))
@@ -175,7 +175,7 @@ def run(execution_job):
     if workflow:
         update_status(workflow_id, execution_id, 3)
         setup_logger(execution_id, execution_job['project-paths']['log_path'])
-        execution_successful = execute_workflow(workflow.steps)
+        eut xecution_successful = execute_workflow(workflow.steps)
         if execution_successful:
             update_status(workflow_id, execution_id, 5)
         else:
@@ -183,7 +183,8 @@ def run(execution_job):
     else:
         update_status(workflow_id, execution_id, -1)
     timestamp = str(time())
-    update_execution_job(execution_id, {"finished-at":timestamp})
+    update_execution_job(execution_id, {"finished-at": timestamp})
+
 
 if __name__ == '__main__':
     try:

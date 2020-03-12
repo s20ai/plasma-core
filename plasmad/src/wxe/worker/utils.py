@@ -34,4 +34,3 @@ def update_status(workflow_id, execution_id, status_code):
         execution_id,
         {"status": status_code}
     )
-
