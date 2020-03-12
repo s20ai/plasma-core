@@ -30,7 +30,7 @@ def run_workflow(client,execution_job):
         db = get_plasma_db()
         db.workflows.find_one_and_update(
                 {'workflow-id':execution_job['workflow-id']},
-                {'$set':{'status':1}}
+                {'$set':{'status':1,'execution-id':execution_job['execution-id']}}
         )
         return True
     except Exception as e:
