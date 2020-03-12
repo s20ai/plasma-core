@@ -5,7 +5,7 @@ FROM ubuntu:18.04
 RUN apt-get -y update
 
 # Install nginx redis and mongo db
-RUN apt-get -y install nginx redis mongodb python3 python3-pip
+RUN apt-get -y install nginx redis mongodb python3 python3-pip python3-venv
 
 # move plasma-core to container
 ADD plasmad /opt/plasmad
@@ -23,7 +23,6 @@ COPY data/nginx_config_plasma /etc/nginx/sites-enabled/default
 
 RUN service nginx start
 RUN service mongodb start
-#RUN service redis-server start | redis-bug : can not assign address 
 RUN redis-server &
 
 
