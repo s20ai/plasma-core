@@ -9,6 +9,7 @@ from xxhash import xxh64_hexdigest
 from src.utils.api_utils import *
 from src.utils.decorators import *
 from src.utils.db_utils import get_plasma_db
+from os import path
 
 
 api = Namespace('execution', description='routes for execution management')
@@ -98,11 +99,15 @@ class ExecutionLogs(Resource):
     @api.doc('Get a execution')
     def get(self, execution_id):
         db = get_plasma_db()
-        execution_collection = db.get_collection('executions')
-        result = execution_collection.find_one({'execution-id': execution_id})
-
-        if result:
-            response_data = marshal(result, execution)
+        execution = db.executions.find_one({'execution-id': execution_id})
+        workflow = db.workflows.find_one({'workflow-id': execution['workflow-id']})
+        project = db.projects.find_one({'project-id': workflow['project-id']})
+        project_path = project['project-path']
+        log_path = path.join(project_path,'logs',execution_id+".log")
+        if path.exists(log_path):
+            with open(log_path,'r') as log_file:
+                log_data = log_file.read()
+            response_data = {"logs":log_data}
             response = generate_response(200, response_data)
         else:
             response = generate_response(404)
