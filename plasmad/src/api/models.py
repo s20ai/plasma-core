@@ -20,8 +20,8 @@ model = api.model('Project', {
     'model-name': fields.String(required=True, description='Model Name'),
     'model-path': fields.String(required=True, description='Model file path'),
     'type': fields.String(required=True, description='Model Type'),
-    'framework': fields.Integer(required=True, description='Model Framework'),
-    'metrics': fields.Integer(required=True, description='Model Metrics'),
+    'framework': fields.String(required=True, description='Model Framework'),
+    'metrics': fields.String(required=True, description='Model Metrics'),
     'created-at': fields.String(require=True, description='Model generation timestamp')
 })
 
