@@ -9,17 +9,21 @@ import yaml
 import os
 import venv
 import sys
+import importlib
 import subprocess
+from logging.handlers import RotatingFileHandler
 import json
 import requests
 from time import sleep
 
 logger = logging.getLogger(' Worker ')
+project_config = {}
 
-
-def setup_loggers(execution_id, log_path):
+def setup_logger(execution_id, log_path):
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
     logger = logging.getLogger(execution_id+'_executor')
-    log_file = log_path+'/'+execution_id+'.log'
+    log_file = log_path+execution_id+'.log'
     file_handler = handler = RotatingFileHandler(log_file)
     stdout_handler = logging.StreamHandler(sys.stdout)
     handlers = [stdout_handler, file_handler]
@@ -36,20 +40,6 @@ def component_loader(component_name, component_path):
     component = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(component)
     return component
-
-
-def verify_components(workflow):
-    logger.info('verifying components')
-    components_path = project_config['paths']['components_path']
-    local_components = os.listdir(components_path)
-    workflow_components = list(workflow.workflow['workflow'].keys())
-    missing_components = set(workflow_components) - set(local_components)
-    if(len(missing_components) == 0):
-        return True
-    else:
-        logger.error('unable to execute workflow')
-        logger.error('component not found : ' + ', '.join(missing_components))
-        return False
 
 
 def generate_workflow_requirements(workflow):
@@ -117,8 +107,7 @@ def execute_step(step):
         output = component.main(step)
         return output
     except Exception as e:
-        logger.error('failed to execute step : %s > %s' %
-                     (step['component'], step['operation']))
+        logger.error('failed to execute step : %s'%step['component'])
         logger.error(e)
 
 
@@ -134,10 +123,10 @@ def execute_workflow(workflow_steps):
         return True
     except Exception as e:
         logger.error('exception : '+str(e))
-        exit(1)
+        return False
 
 
-def verify_components(workflow,project_paths):
+def validate_components(workflow,project_paths):
     logger.info('verifying components')
     components_path = project_paths['components_path']
     local_components = os.listdir(components_path)
@@ -161,7 +150,7 @@ def validate_job(execution_job):
         config_file = json.load(open(project_path+'/.plasma.json'))
         execution_job['project-paths'] = config_file['paths']
         # Load and validate workflow
-        workflow_path = execution_job['project-path']['workflows_path'] + \
+        workflow_path = execution_job['project-paths']['workflows_path'] + \
             execution_job['workflow-name']
         workflow = Workflow(workflow_path)
         workflow_valid = workflow.validate()
@@ -178,17 +167,19 @@ def validate_job(execution_job):
 
 
 def run(execution_job):
+    global project_config
     workflow_id = execution_job['workflow-id']
     execution_id = execution_job['execution-id']
     workflow = validate_job(execution_job)
+    project_config['paths'] = execution_job['project-paths']
     if workflow:
         update_status(workflow_id, execution_id, 3)
-        execution_successful = execute_workflow(workflow)
+        setup_logger(execution_id, execution_job['project-paths']['log_path'])
+        execution_successful = execute_workflow(workflow.steps)
         if execution_successful:
             update_status(workflow_id, execution_id, 5)
         else:
             update_status(workflow_id, execution_id, -1)
-        update_execution_job(execution_id, {"finished-at":timestamp})
     else:
         update_status(workflow_id, execution_id, -1)
     timestamp = str(time())
