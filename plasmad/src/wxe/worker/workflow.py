@@ -33,14 +33,14 @@ class Workflow:
 
     def parse_workflow(self, workflow):
         workflow = workflow['workflow']
-        components = list(workflow.keys())
         steps = []
+        components = list(workflow.keys())
+        print(components)
         for component in components:
-            operations = list(workflow[component].keys())
-            for operation in operations:
-                step = {}
-                step['component'] = component
-                step['parameters'] = workflow[component]
-                step['resources'] = workflow[component].get('resources')
-                steps.append(step)
+            step = {}
+            step['component'] = component
+            step['parameters'] = workflow.get(component)
+            step['resources'] = step['parameters'].get('resources')
+            steps.append(step)
+        print(steps)
         return steps
