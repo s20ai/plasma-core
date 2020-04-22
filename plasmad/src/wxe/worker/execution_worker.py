@@ -29,7 +29,7 @@ def setup_logger(execution_id, log_path):
     handlers = [stdout_handler, file_handler]
     format_string = '%(asctime)s | %(levelname)7s | %(message)s'
     date_format = '%m/%d/%Y %I:%M:%S %p'
-    logging.basicConfig(handlers=handlers, level=logging.DEBUG,
+    logging.basicConfig(handlers=handlers, level=logging.INFO,
                         format=format_string, datefmt=date_format)
 
 
@@ -77,7 +77,7 @@ def update_output_variables(step, output_dict):
 
 def execute_step(step):
     try:
-        logger.info('executing step :'+step['component'])
+        logger.info('Executing step :'+step['component'])
         component_name = step['component']
         component_path = project_config['paths']['components_path'] + \
             component_name+'/component.py'
@@ -91,7 +91,7 @@ def execute_step(step):
 
 
 def execute_workflow(workflow_steps):
-    logger.info('executing workflow')
+    logger.info('Executing workflow')
     try:
         output_dict = {}
         for step in workflow_steps:
@@ -106,7 +106,7 @@ def execute_workflow(workflow_steps):
 
 
 def validate_components(workflow, project_paths):
-    logger.info('verifying components')
+    logger.info('Validating components')
     components_path = project_paths['components_path']
     local_components = os.listdir(components_path)
     workflow_components = list(workflow.workflow['workflow'].keys())
@@ -125,10 +125,12 @@ def validate_job(execution_job):
     update_status(workflow_id, execution_id, 2)
     try:
         # Validate plasma project path
+        logger.info('Validating Plasma Project path')
         project_path = execution_job['project-path']
         config_file = json.load(open(project_path+'/.plasma.json'))
         execution_job['project-paths'] = config_file['paths']
         # Load and validate workflow
+        logger.info('Validating workflow')
         workflow_path = execution_job['project-paths']['workflows_path'] + \
             execution_job['workflow-name']
         workflow = Workflow(workflow_path)
@@ -150,8 +152,8 @@ def run(execution_job):
     workflow_id = execution_job['workflow-id']
     execution_id = execution_job['execution-id']
     workflow = validate_job(execution_job)
-    project_config['paths'] = execution_job['project-paths']
     if workflow:
+        project_config['paths'] = workflow['project-paths']
         update_status(workflow_id, execution_id, 3)
         setup_logger(execution_id, execution_job['project-paths']['log_path'])
         setup_workflow_requirements(workflow)
@@ -168,6 +170,13 @@ def run(execution_job):
 
 if __name__ == '__main__':
     try:
+        logger = logging.getLogger('execution_worker')
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        handlers = [stdout_handler]
+        format_string = '%(asctime)s | %(levelname)7s | %(message)s'
+        date_format = '%m/%d/%Y %I:%M:%S %p'
+        logging.basicConfig(handlers=handlers, level=logging.INFO,
+                            format=format_string, datefmt=date_format)
         client = redis.Redis()
         subscriber = client.pubsub()
         subscriber.subscribe('execution_queue')
@@ -175,6 +184,7 @@ if __name__ == '__main__':
             message = subscriber.get_message()
             if message:
                 if message['type'] == 'message':
+                    logger.info('Received Job : Starting Execution')
                     execution_job = json.loads(message['data'])
                     run(execution_job)
             else:
